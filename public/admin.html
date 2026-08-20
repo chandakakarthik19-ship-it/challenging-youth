@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Challenging Youth 2026 - Admin Dashboard</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <div class="brand">
+          <img src="/logo.png" alt="Challenging Youth Malyada logo" class="brand-logo" />
+          <div>
+            <h1>Challenging Youth 2026</h1>
+            <p class="subtitle">Admin Dashboard: add, edit, and delete donations and expenditures.</p>
+          </div>
+        </div>
+        <nav class="nav">
+          <a href="/user.html">User Dashboard</a>
+          <a href="/admin.html">Admin Dashboard</a>
+        </nav>
+      </header>
+
+      <section class="grid">
+        <article class="card">
+          <h3>Total Donations</h3>
+          <div class="value donation" id="totalDonations">Rs 0.00</div>
+        </article>
+        <article class="card">
+          <h3>Total Expenditures</h3>
+          <div class="value expenditure" id="totalExpenditures">Rs 0.00</div>
+        </article>
+        <article class="card">
+          <h3>Remaining Balance</h3>
+          <div class="value balance" id="balance">Rs 0.00</div>
+        </article>
+      </section>
+
+      <section class="two-col">
+        <article class="panel">
+          <h2>Admin Access</h2>
+          <label for="adminKey">Admin Key</label>
+          <input id="adminKey" type="password" placeholder="Enter admin key" />
+          <div class="form-row" style="margin-top: 10px">
+            <button id="saveKeyBtn" type="button" class="secondary">Save Key</button>
+            <button id="clearKeyBtn" type="button" class="ghost">Clear Key</button>
+          </div>
+
+          <hr style="margin: 18px 0; border: none; border-top: 1px solid var(--border)" />
+
+          <h2 id="formTitle">Add Transaction</h2>
+          <form id="transactionForm">
+            <div class="form-row">
+              <div>
+                <label for="type">Type</label>
+                <select id="type" required>
+                  <option value="donation">Donation</option>
+                  <option value="expenditure">Expenditure</option>
+                </select>
+              </div>
+              <div>
+                <label for="amount">Amount</label>
+                <input id="amount" type="number" min="0" step="0.01" required />
+              </div>
+            </div>
+
+            <div style="margin-top: 10px">
+              <label for="name">Name</label>
+              <input id="name" type="text" required />
+            </div>
+
+            <div style="margin-top: 10px">
+              <label for="date">Date</label>
+              <input id="date" type="date" />
+            </div>
+
+            <div class="form-row" style="margin-top: 12px">
+              <button id="submitBtn" type="submit">Add Transaction</button>
+              <button id="cancelEditBtn" type="button" class="ghost">Cancel Edit</button>
+            </div>
+          </form>
+
+          <div id="adminMessage" class="message"></div>
+        </article>
+
+        <article class="panel">
+          <h2>Manage Donations</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Name</th>
+                  <th>Amount</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminDonationRows"></tbody>
+            </table>
+          </div>
+
+          <h2 style="margin-top: 16px">Manage Expenditures</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Name</th>
+                  <th>Amount</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminExpenditureRows"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </div>
+
+    <script src="/app-admin.js"></script>
+  </body>
+</html>
