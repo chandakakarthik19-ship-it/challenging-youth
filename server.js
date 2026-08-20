@@ -13,6 +13,7 @@ const photoGalleryRouter = require('./routes/photo-gallery');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const HOST = process.env.HOST || '0.0.0.0';
 
 app.use(cors());
 app.use(express.json());
@@ -75,8 +76,9 @@ async function startServer() {
     await connectMongoWithDnsRetry(process.env.MONGODB_URI);
     console.log('Connected to MongoDB Atlas');
 
-    app.listen(PORT, () => {
+    app.listen(PORT, HOST, () => {
       console.log(`Server running at http://localhost:${PORT}`);
+      console.log(`Other devices: use this computer's LAN IP on port ${PORT}.`);
     });
   } catch (error) {
     console.error('Startup error:', error.message);
