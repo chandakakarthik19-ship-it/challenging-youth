@@ -100,6 +100,147 @@ async function loadTransactions() {
   });
 }
 
+function renderGalleryEditor(items) {
+  const editor = document.getElementById('galleryEditor');
+  editor.replaceChildren(
+    ...items.map((item, index) => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'gallery-editor-item';
+      wrapper.dataset.imageUrl = item.imageUrl || '';
+
+      const preview = document.createElement('img');
+      preview.className = 'gallery-editor-preview';
+      preview.src = item.imageUrl || '/logo.png';
+      preview.alt = item.caption || `Gallery image ${index + 1}`;
+
+      const imageLabel = document.createElement('label');
+      imageLabel.textContent = `Photo ${index + 1}`;
+
+      const imageInput = document.createElement('input');
+      imageInput.name = 'image';
+      imageInput.type = 'file';
+      imageInput.accept = 'image/jpeg,image/png,image/gif,image/webp';
+
+      const urlInput = document.createElement('input');
+      urlInput.name = 'imageUrl';
+      urlInput.type = 'text';
+      urlInput.placeholder = 'Or paste an image URL';
+      urlInput.value = item.imageUrl || '';
+      urlInput.required = true;
+
+      const captionLabel = document.createElement('label');
+      captionLabel.textContent = 'Caption';
+
+      const captionInput = document.createElement('input');
+      captionInput.name = 'caption';
+      captionInput.type = 'text';
+      captionInput.value = item.caption || '';
+      captionInput.maxLength = 160;
+
+      const removeButton = document.createElement('button');
+      removeButton.type = 'button';
+      removeButton.className = 'ghost gallery-remove';
+      removeButton.textContent = 'Remove';
+      removeButton.addEventListener('click', () => wrapper.remove());
+
+      imageInput.addEventListener('change', () => {
+        const file = imageInput.files[0];
+        if (!file) return;
+        preview.src = URL.createObjectURL(file);
+        urlInput.required = false;
+      });
+
+      urlInput.addEventListener('input', () => {
+        wrapper.dataset.imageUrl = urlInput.value.trim();
+        if (urlInput.value.trim()) preview.src = urlInput.value.trim();
+      });
+
+      wrapper.append(preview, imageLabel, imageInput, urlInput, captionLabel, captionInput, removeButton);
+      return wrapper;
+    })
+  );
+}
+
+async function addGalleryItem() {
+  const editor = document.getElementById('galleryEditor');
+
+  const existingItems = [...editor.querySelectorAll('.gallery-editor-item')];
+  if (existingItems.length >= 12) {
+    setMessage('The gallery can contain up to 12 photos.', 'error');
+    return;
+  }
+
+  try {
+    setMessage('Preparing selected photos...');
+    const items = [];
+
+    for (const item of existingItems) {
+      const fileInput = item.querySelector('[name="image"]');
+      const imageUrl = fileInput.files[0]
+        ? await uploadGalleryImage(fileInput.files[0])
+        : item.querySelector('[name="imageUrl"]').value.trim();
+
+      items.push({
+        imageUrl,
+        caption: item.querySelector('[name="caption"]').value.trim(),
+      });
+    }
+
+    items.push({ imageUrl: '', caption: '' });
+    renderGalleryEditor(items);
+    setMessage('Add the new photo, then save the gallery.');
+  } catch (error) {
+    setMessage(error.message, 'error');
+  }
+}
+
+async function loadGallery() {
+  const data = await api('/api/gallery');
+  renderGalleryEditor(data.items);
+}
+
+async function uploadGalleryImage(file) {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const headers = {};
+  const key = getActiveAdminKey();
+  if (key) headers['x-admin-key'] = key;
+
+  const res = await fetch('/api/gallery/upload', { method: 'POST', headers, body: formData });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.message || 'Image upload failed.');
+  return body.imageUrl;
+}
+
+async function submitGallery(event) {
+  event.preventDefault();
+  setMessage('Saving gallery...');
+
+  try {
+    const items = [];
+    for (const item of document.querySelectorAll('.gallery-editor-item')) {
+      const fileInput = item.querySelector('[name="image"]');
+      const urlInput = item.querySelector('[name="imageUrl"]');
+      const imageUrl = fileInput.files[0] ? await uploadGalleryImage(fileInput.files[0]) : urlInput.value.trim();
+
+      if (!imageUrl) throw new Error('Choose a photo or enter an image URL for every gallery item.');
+      items.push({
+        imageUrl,
+        caption: item.querySelector('[name="caption"]').value.trim(),
+      });
+    }
+
+    await api('/api/gallery', {
+      method: 'PUT',
+      body: JSON.stringify({ items }),
+    });
+    setMessage('Gallery updated.', 'ok');
+  } catch (error) {
+    setMessage(error.message, 'error');
+  }
+}
+
 function startEdit(transaction) {
   if (!transaction) return;
 
@@ -201,12 +342,14 @@ function wireKeyButtons() {
 async function initAdminDashboard() {
   document.getElementById('transactionForm').addEventListener('submit', submitForm);
   document.getElementById('cancelEditBtn').addEventListener('click', resetForm);
+  document.getElementById('galleryForm').addEventListener('submit', submitGallery);
 
   wireKeyButtons();
+  document.getElementById('addGalleryItemBtn').addEventListener('click', addGalleryItem);
   loadSavedKey();
 
   try {
-    await Promise.all([loadSummary(), loadTransactions()]);
+    await Promise.all([loadSummary(), loadTransactions(), loadGallery()]);
   } catch (error) {
     setMessage(error.message, 'error');
   }

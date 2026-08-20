@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Challenging Youth 2026 - Photo Gallery</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <div class="brand">
+          <img src="/logo.png" alt="Challenging Youth Malyada logo" class="brand-logo" />
+          <div>
+            <h1>PHOTO GALLERY</h1>
+            <p class="subtitle">View and download event photos.</p>
+          </div>
+        </div>
+        <nav class="nav">
+          <a href="/user.html">User Dashboard</a>
+          <a href="/admin-gallery.html">Gallery Admin</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="photo-gallery-page" aria-labelledby="photoGalleryTitle">
+          <h2 id="photoGalleryTitle">Event Photos</h2>
+          <div id="photoGalleryGrid" class="photo-gallery-grid"></div>
+          <p id="photoGalleryMessage" class="message"></p>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app-gallery.js"></script>
+  </body>
+</html>

@@ -58,9 +58,43 @@ async function loadTransactions() {
     .join('');
 }
 
+function renderGallery(items) {
+  const track = document.getElementById('userGalleryItems');
+  const createSlides = () => {
+    const fragment = document.createDocumentFragment();
+
+    items.forEach((item) => {
+      const slide = document.createElement('figure');
+      slide.className = 'gallery-slide';
+
+      const image = document.createElement('img');
+      image.src = item.imageUrl;
+      image.alt = item.caption || 'Gallery image';
+
+      const caption = document.createElement('figcaption');
+      caption.textContent = item.caption || 'Gallery image';
+
+      slide.append(image, caption);
+      fragment.appendChild(slide);
+    });
+
+    return fragment;
+  };
+
+  track.replaceChildren(createSlides(), createSlides());
+}
+
+async function loadGallery() {
+  const res = await fetch('/api/gallery');
+  if (!res.ok) throw new Error('Failed to fetch gallery.');
+
+  const data = await res.json();
+  renderGallery(data.items);
+}
+
 async function initUserDashboard() {
   try {
-    await Promise.all([loadSummary(), loadTransactions()]);
+    await Promise.all([loadSummary(), loadTransactions(), loadGallery()]);
   } catch (error) {
     console.error(error);
     alert('Unable to load data right now.');

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Challenging Youth 2026 - Gallery Admin</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <div class="brand">
+          <img src="/logo.png" alt="Challenging Youth Malyada logo" class="brand-logo" />
+          <div>
+            <h1>GALLERY ADMIN</h1>
+            <p class="subtitle">Add photos and captions to the separate photo gallery.</p>
+          </div>
+        </div>
+        <nav class="nav">
+          <a href="/gallery.html">View Gallery</a>
+          <a href="/admin.html">Admin Dashboard</a>
+        </nav>
+      </header>
+
+      <main class="gallery-admin-layout">
+        <section class="panel">
+          <h2>Add Photo</h2>
+          <label for="adminKey">Admin Key</label>
+          <input id="adminKey" type="password" placeholder="Enter admin key" />
+          <div class="form-row gallery-admin-actions">
+            <button id="saveKeyBtn" type="button" class="secondary">Save Key</button>
+            <button id="clearKeyBtn" type="button" class="ghost">Clear Key</button>
+          </div>
+
+          <form id="photoForm">
+            <label for="photoFile">Photo</label>
+            <input id="photoFile" type="file" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/ogg" required />
+            <label for="photoCaption">Text below photo</label>
+            <input id="photoCaption" type="text" maxlength="160" placeholder="Enter photo text" />
+            <button type="submit">Add Photo</button>
+          </form>
+          <p id="galleryAdminMessage" class="message"></p>
+        </section>
+
+        <section class="panel">
+          <h2>Saved Photos</h2>
+          <div id="adminPhotoGrid" class="photo-gallery-grid"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app-admin-gallery.js"></script>
+  </body>
+</html>

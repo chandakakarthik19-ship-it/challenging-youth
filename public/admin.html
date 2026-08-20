@@ -12,13 +12,14 @@
         <div class="brand">
           <img src="/logo.png" alt="Challenging Youth Malyada logo" class="brand-logo" />
           <div>
-            <h1>Challenging Youth 2026</h1>
+            <h1>CHALLENGING YOUTH 2026</h1>
             <p class="subtitle">Admin Dashboard: add, edit, and delete donations and expenditures.</p>
           </div>
         </div>
         <nav class="nav">
           <a href="/user.html">User Dashboard</a>
           <a href="/admin.html">Admin Dashboard</a>
+          <a href="/admin-gallery.html">Photo Gallery Admin</a>
         </nav>
       </header>
 
@@ -115,6 +116,20 @@
             </table>
           </div>
         </article>
+      </section>
+
+      <section class="image-gallery" aria-labelledby="galleryTitle">
+        <div class="gallery-heading">
+          <h2 id="galleryTitle">Gallery</h2>
+          <p class="small subtitle">Select photos, add captions, and save the scrolling gallery.</p>
+        </div>
+        <form id="galleryForm">
+          <div id="galleryEditor" class="gallery-editor"></div>
+          <div class="form-row gallery-controls">
+            <button id="addGalleryItemBtn" type="button" class="secondary">Add Photo</button>
+            <button type="submit">Save Gallery</button>
+          </div>
+        </form>
       </section>
     </div>
 
