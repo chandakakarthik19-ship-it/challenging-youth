@@ -1,4 +1,3 @@
-const ADMIN_KEY_STORAGE = 'challenging_youth_admin_key';
 let editingId = null;
 
 function money(value) {
@@ -21,14 +20,10 @@ function getTransactionName(transaction) {
   return transaction.name || transaction.description || '-';
 }
 
-function getAdminKey() {
-  return localStorage.getItem(ADMIN_KEY_STORAGE) || '';
-}
-
 function getActiveAdminKey() {
   const input = document.getElementById('adminKey');
   const typedKey = input ? input.value.trim() : '';
-  return typedKey || getAdminKey();
+  return typedKey;
 }
 
 function setMessage(text, kind = '') {
@@ -310,43 +305,12 @@ async function deleteTransaction(id) {
   }
 }
 
-function loadSavedKey() {
-  const key = getAdminKey();
-  if (key) {
-    document.getElementById('adminKey').value = key;
-    setMessage('Admin key loaded from this browser session.', 'ok');
-  }
-}
-
-function wireKeyButtons() {
-  const saveBtn = document.getElementById('saveKeyBtn');
-  const clearBtn = document.getElementById('clearKeyBtn');
-
-  saveBtn.addEventListener('click', () => {
-    const key = document.getElementById('adminKey').value.trim();
-    if (!key) {
-      setMessage('Enter admin key first.', 'error');
-      return;
-    }
-    localStorage.setItem(ADMIN_KEY_STORAGE, key);
-    setMessage('Admin key saved.', 'ok');
-  });
-
-  clearBtn.addEventListener('click', () => {
-    localStorage.removeItem(ADMIN_KEY_STORAGE);
-    document.getElementById('adminKey').value = '';
-    setMessage('Admin key removed.', 'ok');
-  });
-}
-
 async function initAdminDashboard() {
   document.getElementById('transactionForm').addEventListener('submit', submitForm);
   document.getElementById('cancelEditBtn').addEventListener('click', resetForm);
   document.getElementById('galleryForm').addEventListener('submit', submitGallery);
 
-  wireKeyButtons();
   document.getElementById('addGalleryItemBtn').addEventListener('click', addGalleryItem);
-  loadSavedKey();
 
   try {
     await Promise.all([loadSummary(), loadTransactions(), loadGallery()]);

@@ -1,11 +1,5 @@
-const GALLERY_ADMIN_KEY_STORAGE = 'challenging_youth_admin_key';
-
-function getAdminKey() {
-  return localStorage.getItem(GALLERY_ADMIN_KEY_STORAGE) || '';
-}
-
 function getActiveAdminKey() {
-  return document.getElementById('adminKey').value.trim() || getAdminKey();
+  return document.getElementById('adminKey').value.trim();
 }
 
 function setMessage(text, kind = '') {
@@ -101,25 +95,5 @@ async function deletePhoto(id) {
   }
 }
 
-function wireKeyButtons() {
-  const input = document.getElementById('adminKey');
-  const savedKey = getAdminKey();
-  if (savedKey) input.value = savedKey;
-
-  document.getElementById('saveKeyBtn').addEventListener('click', () => {
-    const key = input.value.trim();
-    if (!key) return setMessage('Enter admin key first.', 'error');
-    localStorage.setItem(GALLERY_ADMIN_KEY_STORAGE, key);
-    setMessage('Admin key saved.', 'ok');
-  });
-
-  document.getElementById('clearKeyBtn').addEventListener('click', () => {
-    localStorage.removeItem(GALLERY_ADMIN_KEY_STORAGE);
-    input.value = '';
-    setMessage('Admin key removed.', 'ok');
-  });
-}
-
 document.getElementById('photoForm').addEventListener('submit', addPhoto);
-wireKeyButtons();
 loadPhotos().catch((error) => setMessage(error.message, 'error'));
