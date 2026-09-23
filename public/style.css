@@ -421,6 +421,10 @@ table {
   background: #fff;
 }
 
+.sponsor-names {
+  line-height: 1.7;
+}
+
 th,
 td {
   text-align: left;

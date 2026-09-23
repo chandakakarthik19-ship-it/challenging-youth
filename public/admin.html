@@ -114,6 +114,45 @@
         </article>
       </section>
 
+      <section class="panel" style="margin-top: 18px;">
+        <h2>Annadhanam Sponsors</h2>
+        <p class="small subtitle">Add one item and enter multiple names separated by commas to show them together in one row.</p>
+
+        <form id="annadhanamForm">
+          <div class="form-row">
+            <div style="flex: 1;">
+              <label for="annadhanamNames">Names</label>
+              <input id="annadhanamNames" type="text" placeholder="Name 1, Name 2, Name 3" required />
+            </div>
+            <div style="flex: 1;">
+              <label for="annadhanamItem">Sponsoring Item</label>
+              <input id="annadhanamItem" type="text" placeholder="Rice, Meals, Pooja materials" required />
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-top: 12px;">
+            <button type="submit">Add Sponsor</button>
+            <button id="cancelAnnadhanamEditBtn" type="button" class="ghost">Cancel Edit</button>
+          </div>
+        </form>
+
+        <div id="annadhanamMessage" class="message"></div>
+
+        <div class="table-wrap" style="margin-top: 16px;">
+          <table>
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Name</th>
+                <th>Sponsoring Item</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="annadhanamRows"></tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="image-gallery" aria-labelledby="galleryTitle">
         <div class="gallery-heading">
           <h2 id="galleryTitle">Gallery</h2>

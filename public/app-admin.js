@@ -1,4 +1,5 @@
 let editingId = null;
+let annadhanamEditingId = null;
 
 function money(value) {
   return `Rs ${Number(value || 0).toFixed(2)}`;
@@ -18,6 +19,15 @@ function toInputDate(dateString) {
 
 function getTransactionName(transaction) {
   return transaction.name || transaction.description || '-';
+}
+
+function renderSponsorNames(names) {
+  return String(names || '-')
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean)
+    .map((name) => `<div>${name}</div>`)
+    .join('');
 }
 
 function getActiveAdminKey() {
@@ -305,15 +315,124 @@ async function deleteTransaction(id) {
   }
 }
 
+function setAnnadhanamMessage(text, kind = '') {
+  const el = document.getElementById('annadhanamMessage');
+  el.className = `message ${kind}`;
+  el.textContent = text;
+}
+
+function resetAnnadhanamForm() {
+  annadhanamEditingId = null;
+  document.getElementById('annadhanamForm').reset();
+}
+
+async function loadAnnadhanamSponsors() {
+  const data = await api('/api/annadhanam');
+  const rows = document.getElementById('annadhanamRows');
+
+  rows.innerHTML = data
+    .map(
+      (sponsor, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td class="sponsor-names">${renderSponsorNames(sponsor.name)}</td>
+        <td>${sponsor.sponsoringItem || '-'}</td>
+        <td>
+          <div class="actions">
+            <button type="button" class="ghost" data-annadhanam-action="edit" data-id="${sponsor._id}">Edit</button>
+            <button type="button" class="danger" data-annadhanam-action="delete" data-id="${sponsor._id}">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `
+    )
+    .join('');
+
+  document.querySelectorAll('[data-annadhanam-action="edit"]').forEach((btn) => {
+    btn.addEventListener('click', () => startEditAnnadhanamSponsor(btn.dataset.id));
+  });
+
+  document.querySelectorAll('[data-annadhanam-action="delete"]').forEach((btn) => {
+    btn.addEventListener('click', () => deleteAnnadhanamSponsor(btn.dataset.id));
+  });
+}
+
+function startEditAnnadhanamSponsor(id) {
+  const form = document.getElementById('annadhanamForm');
+  const nameInput = document.getElementById('annadhanamNames');
+  const itemInput = document.getElementById('annadhanamItem');
+
+  const sponsor = document.querySelector(`[data-annadhanam-action="edit"][data-id="${id}"]`);
+  if (!sponsor) return;
+
+  const row = sponsor.closest('tr');
+  if (!row) return;
+
+  const rowCells = row.querySelectorAll('td');
+  const nameValue = rowCells[1]?.textContent || '';
+  const itemValue = rowCells[2]?.textContent || '';
+
+  annadhanamEditingId = id;
+  nameInput.value = nameValue;
+  itemInput.value = itemValue;
+  form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function submitAnnadhanamForm(event) {
+  event.preventDefault();
+  setAnnadhanamMessage('Saving sponsor...');
+
+  const payload = {
+    name: document.getElementById('annadhanamNames').value.trim(),
+    sponsoringItem: document.getElementById('annadhanamItem').value.trim(),
+  };
+
+  try {
+    if (annadhanamEditingId) {
+      await api(`/api/annadhanam/${annadhanamEditingId}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      });
+      setAnnadhanamMessage('Sponsor updated.', 'ok');
+    } else {
+      await api('/api/annadhanam', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      setAnnadhanamMessage('Sponsor added.', 'ok');
+    }
+
+    resetAnnadhanamForm();
+    await loadAnnadhanamSponsors();
+  } catch (error) {
+    setAnnadhanamMessage(error.message, 'error');
+  }
+}
+
+async function deleteAnnadhanamSponsor(id) {
+  if (!confirm('Delete this sponsor?')) return;
+
+  try {
+    await api(`/api/annadhanam/${id}`, { method: 'DELETE' });
+    setAnnadhanamMessage('Sponsor deleted.', 'ok');
+    if (annadhanamEditingId === id) resetAnnadhanamForm();
+    await loadAnnadhanamSponsors();
+  } catch (error) {
+    setAnnadhanamMessage(error.message, 'error');
+  }
+}
+
 async function initAdminDashboard() {
   document.getElementById('transactionForm').addEventListener('submit', submitForm);
   document.getElementById('cancelEditBtn').addEventListener('click', resetForm);
   document.getElementById('galleryForm').addEventListener('submit', submitGallery);
+  document.getElementById('annadhanamForm').addEventListener('submit', submitAnnadhanamForm);
+  document.getElementById('cancelAnnadhanamEditBtn').addEventListener('click', resetAnnadhanamForm);
 
   document.getElementById('addGalleryItemBtn').addEventListener('click', addGalleryItem);
 
   try {
-    await Promise.all([loadSummary(), loadTransactions(), loadGallery()]);
+    await Promise.all([loadSummary(), loadTransactions(), loadGallery(), loadAnnadhanamSponsors()]);
   } catch (error) {
     setMessage(error.message, 'error');
   }

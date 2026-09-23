@@ -10,6 +10,7 @@ dotenv.config();
 const transactionsRouter = require('./routes/transactions');
 const galleryRouter = require('./routes/gallery');
 const photoGalleryRouter = require('./routes/photo-gallery');
+const annadhanamRouter = require('./routes/annadhanam');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,6 +27,7 @@ app.get('/', (req, res) => {
 app.use('/api/transactions', transactionsRouter);
 app.use('/api/gallery', galleryRouter);
 app.use('/api/photo-gallery', photoGalleryRouter);
+app.use('/api/annadhanam', annadhanamRouter);
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });

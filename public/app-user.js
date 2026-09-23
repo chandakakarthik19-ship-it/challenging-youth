@@ -12,6 +12,15 @@ function getTransactionName(transaction) {
   return transaction.name || transaction.description || '-';
 }
 
+function renderSponsorNames(names) {
+  return String(names || '-')
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean)
+    .map((name) => `<div>${name}</div>`)
+    .join('');
+}
+
 async function loadSummary() {
   const res = await fetch('/api/transactions/summary');
   if (!res.ok) throw new Error('Failed to fetch summary.');
@@ -84,6 +93,25 @@ function renderGallery(items) {
   track.replaceChildren(createSlides(), createSlides());
 }
 
+async function loadAnnadhanamSponsors() {
+  const res = await fetch('/api/annadhanam');
+  if (!res.ok) throw new Error('Failed to fetch annadhanam sponsors.');
+
+  const data = await res.json();
+  const rows = document.getElementById('annadhanamUserRows');
+  rows.innerHTML = data
+    .map(
+      (sponsor, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td class="sponsor-names">${renderSponsorNames(sponsor.name)}</td>
+        <td>${sponsor.sponsoringItem || '-'}</td>
+      </tr>
+    `
+    )
+    .join('');
+}
+
 async function loadGallery() {
   const res = await fetch('/api/gallery');
   if (!res.ok) throw new Error('Failed to fetch gallery.');
@@ -94,7 +122,7 @@ async function loadGallery() {
 
 async function initUserDashboard() {
   try {
-    await Promise.all([loadSummary(), loadTransactions(), loadGallery()]);
+    await Promise.all([loadSummary(), loadTransactions(), loadGallery(), loadAnnadhanamSponsors()]);
   } catch (error) {
     console.error(error);
     alert('Unable to load data right now.');
