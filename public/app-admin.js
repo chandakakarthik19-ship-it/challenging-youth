@@ -77,8 +77,9 @@ async function loadTransactions() {
   const renderRows = (list) =>
     list
       .map(
-        (t) => `
+        (t, index) => `
       <tr>
+        <td>${index + 1}</td>
         <td>${formatDate(t.date)}</td>
         <td>${getTransactionName(t)}</td>
         <td>${money(t.amount)}</td>

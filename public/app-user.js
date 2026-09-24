@@ -44,8 +44,9 @@ async function loadTransactions() {
 
   donationRows.innerHTML = donations
     .map(
-      (t) => `
+      (t, index) => `
       <tr>
+        <td>${index + 1}</td>
         <td>${formatDate(t.date)}</td>
         <td>${getTransactionName(t)}</td>
         <td>${money(t.amount)}</td>
@@ -56,8 +57,9 @@ async function loadTransactions() {
 
   expenditureRows.innerHTML = expenditures
     .map(
-      (t) => `
+      (t, index) => `
       <tr>
+        <td>${index + 1}</td>
         <td>${formatDate(t.date)}</td>
         <td>${getTransactionName(t)}</td>
         <td>${money(t.amount)}</td>
