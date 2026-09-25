@@ -163,10 +163,6 @@ h1 {
   gap: 16px;
 }
 
-.two-col > * {
-  min-width: 0;
-}
-
 .panel {
   background: var(--card);
   border: 1px solid var(--border);
@@ -415,7 +411,6 @@ button.ghost {
 .table-wrap {
   overflow: auto;
   max-height: 520px;
-  min-width: 0;
   border-radius: 12px;
   border: 1px solid var(--border);
 }
