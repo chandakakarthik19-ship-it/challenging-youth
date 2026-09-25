@@ -1,5 +1,6 @@
 let editingId = null;
 let annadhanamEditingId = null;
+let transactionSort = 'date';
 
 function money(value) {
   return `Rs ${Number(value || 0).toFixed(2)}`;
@@ -19,6 +20,16 @@ function toInputDate(dateString) {
 
 function getTransactionName(transaction) {
   return transaction.name || transaction.description || '-';
+}
+
+function sortTransactions(transactions) {
+  return [...transactions].sort((first, second) => {
+    if (transactionSort === 'amount') {
+      return Number(second.amount || 0) - Number(first.amount || 0);
+    }
+
+    return new Date(second.date).getTime() - new Date(first.date).getTime();
+  });
 }
 
 function renderSponsorNames(names) {
@@ -71,8 +82,8 @@ async function loadTransactions() {
   const donationRows = document.getElementById('adminDonationRows');
   const expenditureRows = document.getElementById('adminExpenditureRows');
 
-  const donations = data.filter((t) => t.type === 'donation');
-  const expenditures = data.filter((t) => t.type === 'expenditure');
+  const donations = sortTransactions(data.filter((t) => t.type === 'donation'));
+  const expenditures = sortTransactions(data.filter((t) => t.type === 'expenditure'));
 
   const renderRows = (list) =>
     list
@@ -103,6 +114,14 @@ async function loadTransactions() {
 
   document.querySelectorAll('button[data-action="delete"]').forEach((btn) => {
     btn.addEventListener('click', () => deleteTransaction(btn.dataset.id));
+  });
+
+  document.querySelectorAll('button[data-transaction-sort]').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.transactionSort === transactionSort);
+    btn.onclick = () => {
+      transactionSort = btn.dataset.transactionSort;
+      loadTransactions();
+    };
   });
 }
 

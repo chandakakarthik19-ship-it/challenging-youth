@@ -1,3 +1,5 @@
+let transactionSort = 'date';
+
 function money(value) {
   return `Rs ${Number(value || 0).toFixed(2)}`;
 }
@@ -10,6 +12,16 @@ function formatDate(dateString) {
 
 function getTransactionName(transaction) {
   return transaction.name || transaction.description || '-';
+}
+
+function sortTransactions(transactions) {
+  return [...transactions].sort((first, second) => {
+    if (transactionSort === 'amount') {
+      return Number(second.amount || 0) - Number(first.amount || 0);
+    }
+
+    return new Date(second.date).getTime() - new Date(first.date).getTime();
+  });
 }
 
 function renderSponsorNames(names) {
@@ -39,8 +51,8 @@ async function loadTransactions() {
   const expenditureRows = document.getElementById('userExpenditureRows');
   const data = await res.json();
 
-  const donations = data.filter((t) => t.type === 'donation');
-  const expenditures = data.filter((t) => t.type === 'expenditure');
+  const donations = sortTransactions(data.filter((t) => t.type === 'donation'));
+  const expenditures = sortTransactions(data.filter((t) => t.type === 'expenditure'));
 
   donationRows.innerHTML = donations
     .map(
@@ -67,6 +79,14 @@ async function loadTransactions() {
     `
     )
     .join('');
+
+  document.querySelectorAll('button[data-transaction-sort]').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.transactionSort === transactionSort);
+    btn.onclick = () => {
+      transactionSort = btn.dataset.transactionSort;
+      loadTransactions();
+    };
+  });
 }
 
 function renderGallery(items) {

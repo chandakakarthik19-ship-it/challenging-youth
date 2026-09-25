@@ -415,6 +415,18 @@ button.ghost {
   border: 1px solid var(--border);
 }
 
+.table-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.table-controls button.active {
+  background: var(--accent);
+  color: #fff;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
