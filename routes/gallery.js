@@ -3,6 +3,7 @@ const fs = require('fs');
 const multer = require('multer');
 const mongoose = require('mongoose');
 const path = require('path');
+const { Readable } = require('stream');
 const Gallery = require('../models/Gallery');
 const { requireAdmin } = require('../middleware/adminAuth');
 
@@ -22,7 +23,7 @@ const imageMimeTypes = {
   '.webp': 'image/webp',
 };
 const upload = multer({
-  dest: uploadDirectory,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, callback) => {
     callback(null, allowedImageTypes.has(file.mimetype));
@@ -50,7 +51,12 @@ function uploadToAtlas(file) {
 
     uploadStream.once('error', reject);
     uploadStream.once('finish', () => resolve(uploadStream.id.toString()));
-    fs.createReadStream(file.path).once('error', reject).pipe(uploadStream);
+
+    const source = Buffer.isBuffer(file.buffer)
+      ? Readable.from(file.buffer)
+      : fs.createReadStream(file.path);
+
+    source.once('error', reject).pipe(uploadStream);
   });
 }
 
@@ -146,8 +152,6 @@ router.get('/media/:id', async (req, res) => {
 });
 
 router.post('/upload', requireAdmin, (req, res) => {
-  fs.mkdirSync(uploadDirectory, { recursive: true });
-
   upload.single('image')(req, res, async (error) => {
     if (error) {
       return res.status(400).json({ message: 'Choose a JPG, PNG, GIF, or WEBP image under 5 MB.' });
@@ -159,10 +163,8 @@ router.post('/upload', requireAdmin, (req, res) => {
 
     try {
       const mediaId = await uploadToAtlas(req.file);
-      fs.unlinkSync(req.file.path);
       res.status(201).json({ imageUrl: `/api/gallery/media/${mediaId}` });
     } catch (uploadError) {
-      if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
       res.status(500).json({ message: uploadError.message });
     }
   });

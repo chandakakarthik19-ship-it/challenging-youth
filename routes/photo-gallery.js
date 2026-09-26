@@ -3,6 +3,7 @@ const fs = require('fs');
 const multer = require('multer');
 const mongoose = require('mongoose');
 const path = require('path');
+const { Readable } = require('stream');
 const PhotoGallery = require('../models/PhotoGallery');
 const { requireAdmin } = require('../middleware/adminAuth');
 
@@ -18,7 +19,7 @@ const allowedMediaTypes = new Map([
   ['video/ogg', '.ogv'],
 ]);
 const upload = multer({
-  dest: uploadDirectory,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (req, file, callback) => {
     callback(null, allowedMediaTypes.has(file.mimetype));
@@ -38,7 +39,12 @@ function uploadToAtlas(file) {
 
     uploadStream.once('error', reject);
     uploadStream.once('finish', () => resolve(uploadStream.id.toString()));
-    fs.createReadStream(file.path).once('error', reject).pipe(uploadStream);
+
+    const source = Buffer.isBuffer(file.buffer)
+      ? Readable.from(file.buffer)
+      : fs.createReadStream(file.path);
+
+    source.once('error', reject).pipe(uploadStream);
   });
 }
 
@@ -80,8 +86,6 @@ router.get('/media/:id', async (req, res) => {
 });
 
 router.post('/', requireAdmin, (req, res) => {
-  fs.mkdirSync(uploadDirectory, { recursive: true });
-
   upload.single('image')(req, res, async (error) => {
     if (error) {
       return res.status(400).json({ message: 'Choose a JPG, PNG, GIF, WEBP, MP4, WEBM, or OGG file under 50 MB.' });
@@ -97,12 +101,10 @@ router.post('/', requireAdmin, (req, res) => {
       const mediaType = req.file.mimetype.startsWith('video/') ? 'video' : 'image';
 
       if (caption.length > 160) {
-        fs.unlinkSync(req.file.path);
         return res.status(400).json({ message: 'Caption must be 160 characters or fewer.' });
       }
 
       mediaId = await uploadToAtlas(req.file);
-      fs.unlinkSync(req.file.path);
       const photo = await PhotoGallery.create({
         imageUrl: `/api/photo-gallery/media/${mediaId}`,
         caption,
@@ -110,7 +112,6 @@ router.post('/', requireAdmin, (req, res) => {
       });
       res.status(201).json(photo);
     } catch (saveError) {
-      if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
       if (mediaId) {
         await getMediaBucket().delete(new mongoose.Types.ObjectId(mediaId)).catch(() => {});
       }
