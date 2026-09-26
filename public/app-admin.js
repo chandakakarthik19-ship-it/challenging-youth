@@ -22,6 +22,17 @@ function getTransactionName(transaction) {
   return transaction.name || transaction.description || '-';
 }
 
+function getTransactionSearchTerm() {
+  const input = document.getElementById('transactionSearch');
+  return input ? input.value.trim().toLowerCase() : '';
+}
+
+function applyTransactionSearch(transactions) {
+  const query = getTransactionSearchTerm();
+  if (!query) return transactions;
+  return transactions.filter((transaction) => getTransactionName(transaction).toLowerCase().includes(query));
+}
+
 function sortTransactions(transactions) {
   return [...transactions].sort((first, second) => {
     if (transactionSort === 'amount') {
@@ -82,11 +93,19 @@ async function loadTransactions() {
   const donationRows = document.getElementById('adminDonationRows');
   const expenditureRows = document.getElementById('adminExpenditureRows');
 
-  const donations = sortTransactions(data.filter((t) => t.type === 'donation'));
-  const expenditures = sortTransactions(data.filter((t) => t.type === 'expenditure'));
+  const donations = sortTransactions(applyTransactionSearch(data.filter((t) => t.type === 'donation')));
+  const expenditures = sortTransactions(applyTransactionSearch(data.filter((t) => t.type === 'expenditure')));
 
-  const renderRows = (list) =>
-    list
+  const renderRows = (list) => {
+    if (!list.length) {
+      return `
+        <tr>
+          <td colspan="5">No matching person found.</td>
+        </tr>
+      `;
+    }
+
+    return list
       .map(
         (t, index) => `
       <tr>
@@ -104,6 +123,7 @@ async function loadTransactions() {
     `
       )
       .join('');
+  };
 
   donationRows.innerHTML = renderRows(donations);
   expenditureRows.innerHTML = renderRows(expenditures);
@@ -448,6 +468,7 @@ async function initAdminDashboard() {
   document.getElementById('galleryForm').addEventListener('submit', submitGallery);
   document.getElementById('annadhanamForm').addEventListener('submit', submitAnnadhanamForm);
   document.getElementById('cancelAnnadhanamEditBtn').addEventListener('click', resetAnnadhanamForm);
+  document.getElementById('transactionSearch').addEventListener('input', loadTransactions);
 
   document.getElementById('addGalleryItemBtn').addEventListener('click', addGalleryItem);
 
