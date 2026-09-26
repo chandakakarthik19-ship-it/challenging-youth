@@ -15,6 +15,7 @@ const annadhanamRouter = require('./routes/annadhanam');
 const app = express();
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.HOST || '0.0.0.0';
+let mongoConnectionPromise;
 
 app.use(cors());
 app.use(express.json());
@@ -69,13 +70,37 @@ async function connectMongoWithDnsRetry(uri) {
   }
 }
 
-async function startServer() {
-  try {
+function ensureMongoConnection() {
+  if (mongoose.connection.readyState === 1) {
+    return Promise.resolve();
+  }
+
+  if (!mongoConnectionPromise) {
     if (!process.env.MONGODB_URI) {
-      throw new Error('MONGODB_URI is missing in environment variables.');
+      return Promise.reject(new Error('MONGODB_URI is missing in environment variables.'));
     }
 
-    await connectMongoWithDnsRetry(process.env.MONGODB_URI);
+    mongoConnectionPromise = connectMongoWithDnsRetry(process.env.MONGODB_URI).finally(() => {
+      mongoConnectionPromise = null;
+    });
+  }
+
+  return mongoConnectionPromise;
+}
+
+app.use('/api', async (req, res, next) => {
+  try {
+    await ensureMongoConnection();
+    next();
+  } catch (error) {
+    console.error('MongoDB connection error:', error.message);
+    res.status(503).json({ message: 'Database connection unavailable.', detail: error.message });
+  }
+});
+
+async function startServer() {
+  try {
+    await ensureMongoConnection();
     console.log('Connected to MongoDB Atlas');
 
     if (require.main === module) {
