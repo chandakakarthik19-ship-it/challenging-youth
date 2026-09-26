@@ -25,15 +25,6 @@ app.get('/', (req, res) => {
   res.redirect('/user.html');
 });
 
-app.use('/api/transactions', transactionsRouter);
-app.use('/api/gallery', galleryRouter);
-app.use('/api/photo-gallery', photoGalleryRouter);
-app.use('/api/annadhanam', annadhanamRouter);
-
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
-});
-
 function isSrvDnsError(error) {
   return (
     error &&
@@ -96,6 +87,15 @@ app.use('/api', async (req, res, next) => {
     console.error('MongoDB connection error:', error.message);
     res.status(503).json({ message: 'Database connection unavailable.', detail: error.message });
   }
+});
+
+app.use('/api/transactions', transactionsRouter);
+app.use('/api/gallery', galleryRouter);
+app.use('/api/photo-gallery', photoGalleryRouter);
+app.use('/api/annadhanam', annadhanamRouter);
+
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
 });
 
 async function startServer() {
