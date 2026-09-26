@@ -78,14 +78,25 @@ async function startServer() {
     await connectMongoWithDnsRetry(process.env.MONGODB_URI);
     console.log('Connected to MongoDB Atlas');
 
-    app.listen(PORT, HOST, () => {
-      console.log(`Server running at http://localhost:${PORT}`);
-      console.log(`Other devices: use this computer's LAN IP on port ${PORT}.`);
-    });
+    if (require.main === module) {
+      app.listen(PORT, HOST, () => {
+        console.log(`Server running at http://localhost:${PORT}`);
+        console.log(`Other devices: use this computer's LAN IP on port ${PORT}.`);
+      });
+    }
   } catch (error) {
     console.error('Startup error:', error.message);
-    process.exit(1);
+    if (require.main === module) {
+      process.exit(1);
+    }
+    throw error;
   }
 }
 
-startServer();
+if (require.main === module) {
+  startServer();
+} else {
+  startServer().catch(() => {});
+}
+
+module.exports = app;
